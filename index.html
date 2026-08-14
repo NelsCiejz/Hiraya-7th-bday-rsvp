@@ -709,9 +709,8 @@
   </div>
 
   <script>
-    /* --- CONFIGURATION: PASTE YOUR APPS SCRIPT WEB APP URL HERE --- */
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1e0Cf1TbYH-GIX8YBOuk2e9lW4CIexMtk-CdDcUeELJDIMMJHNdWyTK8ZB0elaPdn/exec
-";
+    /* --- CONFIGURATION: APPS SCRIPT WEB APP URL --- */
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1e0Cf1TbYH-GIX8YBOuk2e9lW4CIexMtk-CdDcUeELJDIMMJHNdWyTK8ZB0elaPdn/exec";
 
     /* --- FETCH AND DISPLAY WISHES FROM GOOGLE SHEETS --- */
     function loadWishes() {
@@ -767,7 +766,7 @@
         document.getElementById("rsvpForm").reset();
         submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
         submitBtn.disabled = false;
-        setTimeout(loadWishes, 1500); // Reload wishes
+        setTimeout(loadWishes, 1500);
       })
       .catch(err => {
         alert("Nagka-error sa pag-send. Paki-subukan ulit!");
@@ -776,14 +775,13 @@
       });
     });
 
-    // Load wishes initial call
     loadWishes();
 
     /* --- LIGHTWEIGHT SPARKLES LOGIC (7 SPARKLES ON TAP/CLICK) --- */
     const starIcons = ['✨', '⭐', '💖', '🌸', '🌟'];
 
     function createSparkle(x, y) {
-      const sparkleCount = 7; // Exactly 7 sparkles for 7th Birthday!
+      const sparkleCount = 7;
       for (let i = 0; i < sparkleCount; i++) {
         const sparkle = document.createElement('span');
         sparkle.className = 'star-sparkle';
