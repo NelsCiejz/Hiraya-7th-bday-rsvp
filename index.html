@@ -190,7 +190,6 @@
       border: 3.5px solid var(--accent-peach);
       text-align: center;
       
-      /* HIGH PERFORMANCE ANIMATION TRANSITION */
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 0.5s ease-out, transform 0.5s ease-out;
@@ -461,6 +460,38 @@
       margin-top: 10px;
     }
 
+    /* FORM STYLING */
+    .rsvp-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+      margin-top: 12px;
+    }
+
+    .rsvp-form label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--text-color);
+      margin-bottom: -6px;
+    }
+
+    .rsvp-form input, .rsvp-form select, .rsvp-form textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1.5px solid var(--primary-pink);
+      font-family: inherit;
+      font-size: 0.9rem;
+      background-color: #FFF9F5;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .rsvp-form input:focus, .rsvp-form select:focus, .rsvp-form textarea:focus {
+      border-color: var(--deep-pink);
+    }
+
     /* BUTTONS */
     .btn {
       display: block;
@@ -475,6 +506,8 @@
       box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
       margin-top: 10px;
       text-align: center;
+      border: none;
+      cursor: pointer;
     }
 
     .btn-secondary {
@@ -630,20 +663,45 @@
       </div>
     </div>
 
+    <!-- DYNAMIC WISHES DISPLAY -->
     <div class="card">
       <h2 class="palette-title">Birthday Wishes & Messages 💌</h2>
       <div id="wishes-box" class="wishes-container">
-        <p style="font-size: 0.85rem; color: #A09088;">Pindutin ang RSVP button sa ibaba para mag-iwan ng message! 💖</p>
+        <p style="font-size: 0.85rem; color: #A09088;">Loading wishes... 💖</p>
       </div>
     </div>
 
+    <!-- INTERACTIVE RSVP FORM -->
     <div class="card">
       <h2 class="palette-title">Confirm Attendance 🗓️</h2>
       <p style="font-size: 0.88rem;">Please confirm your attendance before Dec 01, 2026 so we can reserve your seat!</p>
       
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSd54jy_vWxeoq6w3D9nO9ocyD8kbInU7dXwBW6sKy0v4qi4sQ/viewform?usp=header" target="_blank" class="btn">
-        ✨ Click Here to RSVP ✨
-      </a>
+      <form id="rsvpForm" class="rsvp-form">
+        <div>
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" placeholder="e.g. Juan dela Cruz" required>
+        </div>
+
+        <div>
+          <label for="attending">Will you be able to attend?</label>
+          <select id="attending" required>
+            <option value="Yes, I will be there!">Yes, I will be there! 🎉</option>
+            <option value="Sorry, I can't make it.">Sorry, I can't make it 🙏</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="companions">Names of your companions?</label>
+          <input type="text" id="companions" placeholder="e.g. Maria & Kid (o N/A kung mag-isa)">
+        </div>
+
+        <div>
+          <label for="guestMessage">Your message for the birthday celebrant?</label>
+          <textarea id="guestMessage" rows="3" placeholder="Write your sweet wishes for Hiraya... 💖"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn">✨ Submit RSVP & Wishes ✨</button>
+      </form>
 
       <p class="footer-note">Hello Kitty & Friends Party • See you there!</p>
     </div>
@@ -651,6 +709,76 @@
   </div>
 
   <script>
+    /* --- CONFIGURATION: PASTE YOUR APPS SCRIPT WEB APP URL HERE --- */
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1e0Cf1TbYH-GIX8YBOuk2e9lW4CIexMtk-CdDcUeELJDIMMJHNdWyTK8ZB0elaPdn/exec
+";
+
+    /* --- FETCH AND DISPLAY WISHES FROM GOOGLE SHEETS --- */
+    function loadWishes() {
+      if (!SCRIPT_URL || SCRIPT_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE") {
+        document.getElementById("wishes-box").innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Please set up your Apps Script Web App URL! 💖</p>";
+        return;
+      }
+
+      fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(data => {
+          const box = document.getElementById("wishes-box");
+          if (!data || data.length === 0) {
+            box.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Be the first to leave a wish for Hiraya! 💖</p>";
+            return;
+          }
+          
+          box.innerHTML = data.reverse().map(item => `
+            <div style="background: rgba(255,183,197,0.2); padding: 10px; border-radius: 12px; border-left: 4px solid var(--deep-pink);">
+              <strong style="color: var(--deep-pink); font-size: 0.9rem;">${item.name}</strong>
+              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-color);">${item.message}</p>
+            </div>
+          `).join('');
+        })
+        .catch(() => {
+          document.getElementById("wishes-box").innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Leave your wishes below! 💖</p>";
+        });
+    }
+
+    /* --- SUBMIT RSVP FORM TO GOOGLE SHEETS --- */
+    document.getElementById("rsvpForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.innerText = "Sending... ✨";
+      submitBtn.disabled = true;
+
+      const payload = {
+        fullName: document.getElementById("fullName").value,
+        attending: document.getElementById("attending").value,
+        companions: document.getElementById("companions").value || "N/A",
+        message: document.getElementById("guestMessage").value
+      };
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        alert("Maraming salamat! Nareceive na namin ang iyong RSVP at Wishes! 🎉");
+        document.getElementById("rsvpForm").reset();
+        submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
+        submitBtn.disabled = false;
+        setTimeout(loadWishes, 1500); // Reload wishes
+      })
+      .catch(err => {
+        alert("Nagka-error sa pag-send. Paki-subukan ulit!");
+        submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
+        submitBtn.disabled = false;
+      });
+    });
+
+    // Load wishes initial call
+    loadWishes();
+
     /* --- LIGHTWEIGHT SPARKLES LOGIC (7 SPARKLES ON TAP/CLICK) --- */
     const starIcons = ['✨', '⭐', '💖', '🌸', '🌟'];
 
@@ -665,7 +793,7 @@
         sparkle.style.top = y + 'px';
 
         const angle = Math.random() * Math.PI * 2;
-        const distance = 30 + Math.random() * 45; // Bahagyang mas malawak ang sabog
+        const distance = 30 + Math.random() * 45;
         const tx = Math.cos(angle) * distance + 'px';
         const ty = Math.sin(angle) * distance + 'px';
 
@@ -680,7 +808,6 @@
       }
     }
 
-    // Touch and Click Only (Zero Overhead on Scroll)
     window.addEventListener('touchstart', (e) => {
       const touch = e.touches[0];
       createSparkle(touch.clientX, touch.clientY);
@@ -795,3 +922,5 @@
       }
     }, { once: true });
   </script>
+</body>
+</html>
