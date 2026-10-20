@@ -707,73 +707,41 @@
     </div>
 
   </div>
-
-  <script>
+<script>
     /* --- CONFIGURATION: APPS SCRIPT WEB APP URL --- */
-    https://script.google.com/macros/s/AKfycbwBei2JUtvLHRLlKvolERQ85lwiE2G72ZNTG0xex1lnN8k5JOkXNEB-5m1nDitbanyhKg/exec
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBei2JUtvLHRLlKvolERQ85lwiE2G72ZNTG0xex1lnN8k5JOkXNEB-5m1nDitbanyhKg/exec";
+
     /* --- FETCH AND DISPLAY WISHES FROM GOOGLE SHEETS --- */
     function loadWishes() {
-      if (!SCRIPT_URL || SCRIPT_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE") {
-        document.getElementById("wishes-box").innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Please set up your Apps Script Web App URL! 💖</p>";
+      const wishesBox = document.getElementById("wishes-box");
+      if (!wishesBox) return;
+
+      if (!SCRIPT_URL || SCRIPT_URL === "") {
+        wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Pindutin ang RSVP button sa ibaba para mag-iwan ng message! 💖</p>";
         return;
       }
 
       fetch(SCRIPT_URL)
         .then(response => response.json())
         .then(data => {
-          const box = document.getElementById("wishes-box");
           if (!data || data.length === 0) {
-            box.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Be the first to leave a wish for Hiraya! 💖</p>";
+            wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Be the first to leave a wish for Hiraya! 💖</p>";
             return;
           }
-          
-          box.innerHTML = data.reverse().map(item => `
-            <div style="background: rgba(255,183,197,0.2); padding: 10px; border-radius: 12px; border-left: 4px solid var(--deep-pink);">
+
+          wishesBox.innerHTML = data.reverse().map(item => `
+            <div style="background: rgba(255,183,197,0.2); padding: 10px; border-radius: 12px; margin-bottom: 8px;">
               <strong style="color: var(--deep-pink); font-size: 0.9rem;">${item.name}</strong>
               <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-color);">${item.message}</p>
             </div>
           `).join('');
         })
         .catch(() => {
-          document.getElementById("wishes-box").innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Leave your wishes below! 💖</p>";
+          wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Pindutin ang RSVP button sa ibaba para mag-iwan ng message! 💖</p>";
         });
     }
 
-    /* --- SUBMIT RSVP FORM TO GOOGLE SHEETS --- */
-    document.getElementById("rsvpForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById("submitBtn");
-      submitBtn.innerText = "Sending... ✨";
-      submitBtn.disabled = true;
-
-      const payload = {
-        fullName: document.getElementById("fullName").value,
-        attending: document.getElementById("attending").value,
-        companions: document.getElementById("companions").value || "N/A",
-        message: document.getElementById("guestMessage").value
-      };
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(() => {
-        alert("Maraming salamat! Nareceive na namin ang iyong RSVP at Wishes! 🎉");
-        document.getElementById("rsvpForm").reset();
-        submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
-        submitBtn.disabled = false;
-        setTimeout(loadWishes, 1500);
-      })
-      .catch(err => {
-        alert("Nagka-error sa pag-send. Paki-subukan ulit!");
-        submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
-        submitBtn.disabled = false;
-      });
-    });
-
+    // Unang pag-load ng wishes
     loadWishes();
 
     /* --- LIGHTWEIGHT SPARKLES LOGIC (7 SPARKLES ON TAP/CLICK) --- */
@@ -852,8 +820,8 @@
       if (index >= slides.length) currentSlide = 0;
       if (index < 0) currentSlide = slides.length - 1;
 
-      slides[currentSlide].classList.add('active-slide');
-      dots[currentSlide].classList.add('active-dot');
+      if (slides[currentSlide]) slides[currentSlide].classList.add('active-slide');
+      if (dots[currentSlide]) dots[currentSlide].classList.add('active-dot');
     }
 
     function changeSlide(direction) {
@@ -875,7 +843,10 @@
 
       if (difference < 0) {
         clearInterval(timer);
-        document.querySelector(".timer-container").innerHTML = "<p style='font-weight:bold; color:var(--deep-pink);'>The party has started! 🎉</p>";
+        const timerContainer = document.querySelector(".timer-container");
+        if (timerContainer) {
+          timerContainer.innerHTML = "<p style='font-weight:bold; color:var(--deep-pink);'>The party has started! 🎉</p>";
+        }
         return;
       }
 
@@ -884,10 +855,15 @@
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      document.getElementById("days").innerText = days < 10 ? "0" + days : days;
-      document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
-      document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
-      document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+      const daysElem = document.getElementById("days");
+      const hoursElem = document.getElementById("hours");
+      const minsElem = document.getElementById("minutes");
+      const secsElem = document.getElementById("seconds");
+
+      if (daysElem) daysElem.innerText = days < 10 ? "0" + days : days;
+      if (hoursElem) hoursElem.innerText = hours < 10 ? "0" + hours : hours;
+      if (minsElem) minsElem.innerText = minutes < 10 ? "0" + minutes : minutes;
+      if (secsElem) secsElem.innerText = seconds < 10 ? "0" + seconds : seconds;
     }, 1000);
 
     /* --- MUSIC AUDIO PLAYER LOGIC --- */
@@ -896,13 +872,14 @@
     let isPlaying = false;
 
     function toggleMusic() {
+      if (!music) return;
       if (isPlaying) {
         music.pause();
-        musicBtn.innerHTML = "🔇";
+        if (musicBtn) musicBtn.innerHTML = "🔇";
         isPlaying = false;
       } else {
         music.play().then(() => {
-          musicBtn.innerHTML = "🎵";
+          if (musicBtn) musicBtn.innerHTML = "🎵";
           isPlaying = true;
         }).catch(err => {
           alert("Paki-tap po muna ang screen para mag-play ang music!");
@@ -911,10 +888,10 @@
     }
 
     document.body.addEventListener('click', function() {
-      if (!isPlaying) {
+      if (music && !isPlaying) {
         music.play().then(() => {
           isPlaying = true;
-          musicBtn.innerHTML = "🎵";
+          if (musicBtn) musicBtn.innerHTML = "🎵";
         }).catch(() => {});
       }
     }, { once: true });
