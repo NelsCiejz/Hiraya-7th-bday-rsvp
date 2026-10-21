@@ -710,6 +710,7 @@
 <script>
   /* --- CONFIGURATION: APPS SCRIPT WEB APP URL --- */
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiuEL1IWOWkG-O5hP-sEH3XIYXRp0waIHc2QnNHb-utxFasOEkGj0_U7BEHrtmp4ICDg/exec";
+
   /* --- FETCH AND DISPLAY WISHES FROM GOOGLE SHEETS --- */
   function loadWishes() {
     const wishesBox = document.getElementById("wishes-box");
@@ -748,7 +749,7 @@
 
   if (rsvpForm) {
     rsvpForm.addEventListener("submit", function(e) {
-      e.preventDefault(); // Pipigilan ang pag-refresh o pag-redirect ng page
+      e.preventDefault();
 
       const submitBtn = document.getElementById("submitBtn");
       if (submitBtn) {
@@ -756,32 +757,34 @@
         submitBtn.innerText = "Submitting... 💖";
       }
 
-      // Kukunin ang mga inputs mula sa Form gamit ang name o id
-      const fullNameInput = rsvpForm.querySelector('[name="fullName"]') || document.getElementById("fullName") || rsvpForm.querySelector('input[type="text"]');
-      const attendanceInput = rsvpForm.querySelector('[name="attendance"]') || document.getElementById("attendance") || rsvpForm.querySelector('select');
-      const companionsInput = rsvpForm.querySelector('[name="companions"]') || document.getElementById("companions") || rsvpForm.querySelectorAll('input[type="text"]')[1];
-      const messageInput = rsvpForm.querySelector('[name="message"]') || document.getElementById("message") || rsvpForm.querySelector('textarea');
+      // Kukunin ang mga inputs gamit ang eksaktong IDs mula sa iyong HTML
+      const fullName = document.getElementById("fullName") ? document.getElementById("fullName").value : "";
+      const attendance = document.getElementById("attending") ? document.getElementById("attending").value : "";
+      const companions = document.getElementById("companions") ? document.getElementById("companions").value : "";
+      const message = document.getElementById("guestMessage") ? document.getElementById("guestMessage").value : "";
 
       const formData = new URLSearchParams();
-      formData.append("fullName", fullNameInput ? fullNameInput.value : "");
-      formData.append("attendance", attendanceInput ? attendanceInput.value : "");
-      formData.append("companions", companionsInput ? companionsInput.value : "");
-      formData.append("message", messageInput ? messageInput.value : "");
+      formData.append("fullName", fullName);
+      formData.append("attendance", attendance);
+      formData.append("companions", companions);
+      formData.append("message", message);
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        body: formData
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
       })
-      .then(response => response.text())
-      .then(result => {
+      .then(() => {
         alert("Salamat po! Naitala na ang iyong RSVP at Wishes para kay Hiraya! 💕");
         rsvpForm.reset();
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
         }
-        // Automatic na i-load ulit ang wishes para lumabas agad sa screen!
-        loadWishes();
+        setTimeout(loadWishes, 1000);
       })
       .catch(error => {
         alert("May kaunting problema sa pagpasa. Pakisubukan ulit!");
