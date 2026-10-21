@@ -708,193 +708,243 @@
 
   </div>
 <script>
-    /* --- CONFIGURATION: APPS SCRIPT WEB APP URL --- */
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBei2JUtvLHRLlKvolERQ85lwiE2G72ZNTG0xex1lnN8k5JOkXNEB-5m1nDitbanyhKg/exec";
+  /* --- CONFIGURATION: APPS SCRIPT WEB APP URL --- */
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBei2JUtvLHRLlKvolERQ85lwiE2G72ZNTG0xex1lnN8k5JOkXNEB-5m1nDitbanyhKg/exec";
 
-    /* --- FETCH AND DISPLAY WISHES FROM GOOGLE SHEETS --- */
-    function loadWishes() {
-      const wishesBox = document.getElementById("wishes-box");
-      if (!wishesBox) return;
+  /* --- FETCH AND DISPLAY WISHES FROM GOOGLE SHEETS --- */
+  function loadWishes() {
+    const wishesBox = document.getElementById("wishes-box");
+    if (!wishesBox) return;
 
-      if (!SCRIPT_URL || SCRIPT_URL === "") {
+    if (!SCRIPT_URL || SCRIPT_URL === "") {
+      wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Pindutin ang RSVP button sa ibaba para mag-iwan ng message! 💖</p>";
+      return;
+    }
+
+    fetch(SCRIPT_URL)
+      .then(response => response.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Be the first to leave a wish for Hiraya! 💖</p>";
+          return;
+        }
+
+        wishesBox.innerHTML = data.reverse().map(item => `
+          <div style="background: rgba(255,183,197,0.2); padding: 10px; border-radius: 12px; margin-bottom: 8px;">
+            <strong style="color: var(--deep-pink); font-size: 0.9rem;">${item.name}</strong>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-color);">${item.message}</p>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
         wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Pindutin ang RSVP button sa ibaba para mag-iwan ng message! 💖</p>";
-        return;
+      });
+  }
+
+  // Unang pag-load ng wishes
+  loadWishes();
+
+  /* --- SUBMIT RSVP FORM TO GOOGLE SHEETS VIA APPS SCRIPT --- */
+  const rsvpForm = document.getElementById("rsvpForm");
+
+  if (rsvpForm) {
+    rsvpForm.addEventListener("submit", function(e) {
+      e.preventDefault(); // Pipigilan ang pag-refresh o pag-redirect ng page
+
+      const submitBtn = document.getElementById("submitBtn");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Submitting... 💖";
       }
 
-      fetch(SCRIPT_URL)
-        .then(response => response.json())
-        .then(data => {
-          if (!data || data.length === 0) {
-            wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Be the first to leave a wish for Hiraya! 💖</p>";
-            return;
-          }
+      // Kukunin ang mga inputs mula sa Form gamit ang name o id
+      const fullNameInput = rsvpForm.querySelector('[name="fullName"]') || document.getElementById("fullName") || rsvpForm.querySelector('input[type="text"]');
+      const attendanceInput = rsvpForm.querySelector('[name="attendance"]') || document.getElementById("attendance") || rsvpForm.querySelector('select');
+      const companionsInput = rsvpForm.querySelector('[name="companions"]') || document.getElementById("companions") || rsvpForm.querySelectorAll('input[type="text"]')[1];
+      const messageInput = rsvpForm.querySelector('[name="message"]') || document.getElementById("message") || rsvpForm.querySelector('textarea');
 
-          wishesBox.innerHTML = data.reverse().map(item => `
-            <div style="background: rgba(255,183,197,0.2); padding: 10px; border-radius: 12px; margin-bottom: 8px;">
-              <strong style="color: var(--deep-pink); font-size: 0.9rem;">${item.name}</strong>
-              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-color);">${item.message}</p>
-            </div>
-          `).join('');
-        })
-        .catch(() => {
-          wishesBox.innerHTML = "<p style='font-size: 0.85rem; color: #A09088;'>Pindutin ang RSVP button sa ibaba para mag-iwan ng message! 💖</p>";
-        });
-    }
+      const formData = new URLSearchParams();
+      formData.append("fullName", fullNameInput ? fullNameInput.value : "");
+      formData.append("attendance", attendanceInput ? attendanceInput.value : "");
+      formData.append("companions", companionsInput ? companionsInput.value : "");
+      formData.append("message", messageInput ? messageInput.value : "");
 
-    // Unang pag-load ng wishes
-    loadWishes();
-
-    /* --- LIGHTWEIGHT SPARKLES LOGIC (7 SPARKLES ON TAP/CLICK) --- */
-    const starIcons = ['✨', '⭐', '💖', '🌸', '🌟'];
-
-    function createSparkle(x, y) {
-      const sparkleCount = 7;
-      for (let i = 0; i < sparkleCount; i++) {
-        const sparkle = document.createElement('span');
-        sparkle.className = 'star-sparkle';
-        sparkle.innerText = starIcons[Math.floor(Math.random() * starIcons.length)];
-        
-        sparkle.style.left = x + 'px';
-        sparkle.style.top = y + 'px';
-
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 30 + Math.random() * 45;
-        const tx = Math.cos(angle) * distance + 'px';
-        const ty = Math.sin(angle) * distance + 'px';
-
-        sparkle.style.setProperty('--tx', tx);
-        sparkle.style.setProperty('--ty', ty);
-
-        document.body.appendChild(sparkle);
-
-        setTimeout(() => {
-          sparkle.remove();
-        }, 800);
-      }
-    }
-
-    window.addEventListener('touchstart', (e) => {
-      const touch = e.touches[0];
-      createSparkle(touch.clientX, touch.clientY);
-    }, { passive: true });
-
-    window.addEventListener('click', (e) => {
-      createSparkle(e.clientX, e.clientY);
-    });
-
-    /* --- OPTIMIZED HIGH-PERFORMANCE SCROLL REVEAL --- */
-    const cards = document.querySelectorAll('.card');
-
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px 0px -20px 0px',
-      threshold: 0.1
-    };
-
-    const cardObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('magic-appear');
-          observer.unobserve(entry.target);
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.text())
+      .then(result => {
+        alert("Salamat po! Naitala na ang iyong RSVP at Wishes para kay Hiraya! 💕");
+        rsvpForm.reset();
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
+        }
+        // Automatic na i-load ulit ang wishes para lumabas agad sa screen!
+        loadWishes();
+      })
+      .catch(error => {
+        alert("May kaunting problema sa pagpasa. Pakisubukan ulit!");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
         }
       });
-    }, observerOptions);
+    });
+  }
 
-    cards.forEach(card => {
-      cardObserver.observe(card);
+  /* --- LIGHTWEIGHT SPARKLES LOGIC (7 SPARKLES ON TAP/CLICK) --- */
+  const starIcons = ['✨', '⭐', '💖', '🌸', '🌟'];
+
+  function createSparkle(x, y) {
+    const sparkleCount = 7;
+    for (let i = 0; i < sparkleCount; i++) {
+      const sparkle = document.createElement('span');
+      sparkle.className = 'star-sparkle';
+      sparkle.innerText = starIcons[Math.floor(Math.random() * starIcons.length)];
+      
+      sparkle.style.left = x + 'px';
+      sparkle.style.top = y + 'px';
+
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 30 + Math.random() * 45;
+      const tx = Math.cos(angle) * distance + 'px';
+      const ty = Math.sin(angle) * distance + 'px';
+
+      sparkle.style.setProperty('--tx', tx);
+      sparkle.style.setProperty('--ty', ty);
+
+      document.body.appendChild(sparkle);
+
+      setTimeout(() => {
+        sparkle.remove();
+      }, 800);
+    }
+  }
+
+  window.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    createSparkle(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  window.addEventListener('click', (e) => {
+    createSparkle(e.clientX, e.clientY);
+  });
+
+  /* --- OPTIMIZED HIGH-PERFORMANCE SCROLL REVEAL --- */
+  const cards = document.querySelectorAll('.card');
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -20px 0px',
+    threshold: 0.1
+  };
+
+  const cardObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('magic-appear');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  cards.forEach(card => {
+    cardObserver.observe(card);
+  });
+
+  /* --- CAROUSEL LOGIC --- */
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.dot');
+
+  function showSlide(index) {
+    slides.forEach(slide => {
+      slide.classList.remove('active-slide');
+    });
+    dots.forEach(dot => {
+      dot.classList.remove('active-dot');
     });
 
-    /* --- CAROUSEL LOGIC --- */
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.carousel-slide');
-    const dots = document.querySelectorAll('.dot');
+    if (index >= slides.length) currentSlide = 0;
+    if (index < 0) currentSlide = slides.length - 1;
 
-    function showSlide(index) {
-      slides.forEach(slide => {
-        slide.classList.remove('active-slide');
+    if (slides[currentSlide]) slides[currentSlide].classList.add('active-slide');
+    if (dots[currentSlide]) dots[currentSlide].classList.add('active-dot');
+  }
+
+  function changeSlide(direction) {
+    currentSlide += direction;
+    showSlide(currentSlide);
+  }
+
+  setInterval(() => {
+    currentSlide++;
+    showSlide(currentSlide);
+  }, 3500);
+
+  /* --- COUNTDOWN TIMER LOGIC --- */
+  const targetDate = new Date("December 6, 2026 14:00:00").getTime();
+
+  const timer = setInterval(function() {
+    const now = new Date().getTime();
+    const difference = targetDate - now;
+
+    if (difference < 0) {
+      clearInterval(timer);
+      const timerContainer = document.querySelector(".timer-container");
+      if (timerContainer) {
+        timerContainer.innerHTML = "<p style='font-weight:bold; color:var(--deep-pink);'>The party has started! 🎉</p>";
+      }
+      return;
+    }
+
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+    const daysElem = document.getElementById("days");
+    const hoursElem = document.getElementById("hours");
+    const minsElem = document.getElementById("minutes");
+    const secsElem = document.getElementById("seconds");
+
+    if (daysElem) daysElem.innerText = days < 10 ? "0" + days : days;
+    if (hoursElem) hoursElem.innerText = hours < 10 ? "0" + hours : hours;
+    if (minsElem) minsElem.innerText = minutes < 10 ? "0" + minutes : minutes;
+    if (secsElem) secsElem.innerText = seconds < 10 ? "0" + seconds : seconds;
+  }, 1000);
+
+  /* --- MUSIC AUDIO PLAYER LOGIC --- */
+  const music = document.getElementById("bg-music");
+  const musicBtn = document.getElementById("musicBtn");
+  let isPlaying = false;
+
+  function toggleMusic() {
+    if (!music) return;
+    if (isPlaying) {
+      music.pause();
+      if (musicBtn) musicBtn.innerHTML = "🔇";
+      isPlaying = false;
+    } else {
+      music.play().then(() => {
+        if (musicBtn) musicBtn.innerHTML = "🎵";
+        isPlaying = true;
+      }).catch(err => {
+        alert("Paki-tap po muna ang screen para mag-play ang music!");
       });
-      dots.forEach(dot => {
-        dot.classList.remove('active-dot');
-      });
-
-      if (index >= slides.length) currentSlide = 0;
-      if (index < 0) currentSlide = slides.length - 1;
-
-      if (slides[currentSlide]) slides[currentSlide].classList.add('active-slide');
-      if (dots[currentSlide]) dots[currentSlide].classList.add('active-dot');
     }
+  }
 
-    function changeSlide(direction) {
-      currentSlide += direction;
-      showSlide(currentSlide);
+  document.body.addEventListener('click', function() {
+    if (music && !isPlaying) {
+      music.play().then(() => {
+        isPlaying = true;
+        if (musicBtn) musicBtn.innerHTML = "🎵";
+      }).catch(() => {});
     }
-
-    setInterval(() => {
-      currentSlide++;
-      showSlide(currentSlide);
-    }, 3500);
-
-    /* --- COUNTDOWN TIMER LOGIC --- */
-    const targetDate = new Date("December 6, 2026 14:00:00").getTime();
-
-    const timer = setInterval(function() {
-      const now = new Date().getTime();
-      const difference = targetDate - now;
-
-      if (difference < 0) {
-        clearInterval(timer);
-        const timerContainer = document.querySelector(".timer-container");
-        if (timerContainer) {
-          timerContainer.innerHTML = "<p style='font-weight:bold; color:var(--deep-pink);'>The party has started! 🎉</p>";
-        }
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-      const daysElem = document.getElementById("days");
-      const hoursElem = document.getElementById("hours");
-      const minsElem = document.getElementById("minutes");
-      const secsElem = document.getElementById("seconds");
-
-      if (daysElem) daysElem.innerText = days < 10 ? "0" + days : days;
-      if (hoursElem) hoursElem.innerText = hours < 10 ? "0" + hours : hours;
-      if (minsElem) minsElem.innerText = minutes < 10 ? "0" + minutes : minutes;
-      if (secsElem) secsElem.innerText = seconds < 10 ? "0" + seconds : seconds;
-    }, 1000);
-
-    /* --- MUSIC AUDIO PLAYER LOGIC --- */
-    const music = document.getElementById("bg-music");
-    const musicBtn = document.getElementById("musicBtn");
-    let isPlaying = false;
-
-    function toggleMusic() {
-      if (!music) return;
-      if (isPlaying) {
-        music.pause();
-        if (musicBtn) musicBtn.innerHTML = "🔇";
-        isPlaying = false;
-      } else {
-        music.play().then(() => {
-          if (musicBtn) musicBtn.innerHTML = "🎵";
-          isPlaying = true;
-        }).catch(err => {
-          alert("Paki-tap po muna ang screen para mag-play ang music!");
-        });
-      }
-    }
-
-    document.body.addEventListener('click', function() {
-      if (music && !isPlaying) {
-        music.play().then(() => {
-          isPlaying = true;
-          if (musicBtn) musicBtn.innerHTML = "🎵";
-        }).catch(() => {});
-      }
-    }, { once: true });
-  </script>
+  }, { once: true });
+</script>       
 </body>
 </html>
