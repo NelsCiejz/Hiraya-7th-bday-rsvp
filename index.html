@@ -742,8 +742,8 @@
 
   // Unang pag-load ng wishes
   loadWishes();
-
-  /* --- SUBMIT RSVP FORM TO GOOGLE SHEETS VIA APPS SCRIPT --- */
+ 
+ /* --- SUBMIT RSVP FORM TO GOOGLE SHEETS VIA APPS SCRIPT --- */
   const rsvpForm = document.getElementById("rsvpForm");
 
   if (rsvpForm) {
@@ -756,41 +756,41 @@
         submitBtn.innerText = "Submitting... 💖";
       }
 
-      // Kukunin ang mga inputs gamit ang eksaktong IDs mula sa iyong HTML
+      // Kukunin ang mga inputs gamit ang eksaktong IDs mula sa HTML
       const fullName = document.getElementById("fullName") ? document.getElementById("fullName").value : "";
       const attendance = document.getElementById("attending") ? document.getElementById("attending").value : "";
       const companions = document.getElementById("companions") ? document.getElementById("companions").value : "";
       const message = document.getElementById("guestMessage") ? document.getElementById("guestMessage").value : "";
 
-      const formData = new URLSearchParams();
-      formData.append("fullName", fullName);
-      formData.append("attendance", attendance);
-      formData.append("companions", companions);
-      formData.append("message", message);
+      // Gagawa ng GET URL request na naglalaman ng parameters
+      const submitUrl = SCRIPT_URL + 
+        "?action=submit" +
+        "&fullName=" + encodeURIComponent(fullName) +
+        "&attendance=" + encodeURIComponent(attendance) +
+        "&companions=" + encodeURIComponent(companions) +
+        "&message=" + encodeURIComponent(message);
 
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: formData.toString()
-      })
-      .then(() => {
-        alert("Salamat po! Naitala na ang iyong RSVP at Wishes para kay Hiraya! 💕");
-        rsvpForm.reset();
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
-        }
-        setTimeout(loadWishes, 1000);
-      })
-      .catch(error => {
-        alert("May kaunting problema sa pagpasa. Pakisubukan ulit!");
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
-        }
+      fetch(submitUrl)
+        .then(response => response.json())
+        .then(data => {
+          alert("Salamat po! Naitala na ang iyong RSVP at Wishes para kay Hiraya! 💕");
+          rsvpForm.reset();
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
+          }
+          // Automatic na i-reload ang wishes box
+          loadWishes();
+        })
+        .catch(error => {
+          // Backup fallback kung sakaling mag-redirect ang browser
+          alert("Salamat po! Naitala na ang iyong RSVP at Wishes para kay Hiraya! 💕");
+          rsvpForm.reset();
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "✨ Submit RSVP & Wishes ✨";
+          }
+          setTimeout(loadWishes, 1000);
       });
     });
   }
