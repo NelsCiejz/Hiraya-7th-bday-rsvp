@@ -13,6 +13,99 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
+   /* ENVELOPE INTRO SCREEN */
+    .envelope-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, #FFF0F5 0%, #FFB7C5 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999999;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+      padding: 20px;
+    }
+
+    .envelope-card {
+      background: #FFFFFF;
+      border: 4px dashed #FF69B4;
+      border-radius: 25px;
+      padding: 30px 20px;
+      text-align: center;
+      max-width: 350px;
+      width: 100%;
+      box-shadow: 0 12px 30px rgba(255, 105, 180, 0.35);
+      position: relative;
+      animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .stamp-icon {
+      position: absolute;
+      top: -15px;
+      right: 15px;
+      font-size: 2rem;
+      background: #FFDAB9;
+      border-radius: 50%;
+      padding: 5px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    .env-kitty {
+      width: 80px;
+      height: auto;
+      margin-bottom: 10px;
+      animation: bounce 2s infinite ease-in-out;
+    }
+
+    .env-title {
+      font-family: 'BoldinsFont', cursive;
+      color: #FF69B4;
+      font-size: 1.8rem;
+      margin: 5px 0;
+    }
+
+    .env-subtitle {
+      font-size: 0.95rem;
+      color: #5A4A42;
+      margin-bottom: 20px;
+    }
+
+    .open-btn {
+      background-color: #FF69B4;
+      color: white;
+      font-family: 'BoldinsFont', cursive;
+      font-size: 1.1rem;
+      padding: 12px 25px;
+      border-radius: 50px;
+      border: 3px solid #FFF;
+      box-shadow: 0 6px 15px rgba(255, 105, 180, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .open-btn:active {
+      transform: scale(0.95);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* FADE OUT CLASS */
+    .envelope-overlay.hide-envelope {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
     /* 1. CUSTOM FONT DECLARATION */
     @font-face {
       font-family: 'BoldinsFont';
@@ -551,7 +644,16 @@
   </style>
 </head>
 <body>
-
+ <!-- INTERACTIVE ENVELOPE INTRO OVERLAY -->
+  <div id="envelope-overlay" class="envelope-overlay">
+    <div class="envelope-card">
+      <div class="stamp-icon">🎀</div>
+      <img src="Hello Kitty.png" class="env-kitty" alt="Hello Kitty">
+      <h2 class="env-title">You're Invited!</h2>
+      <p class="env-subtitle">Hiraya's 7th Birthday Celebration 💕</p>
+      <button class="open-btn" onclick="openInvitation()">✉️ Open Invitation</button>
+    </div>
+  </div>
   <!-- MAGICAL BUBBLES BACKGROUND -->
   <div class="bubbles-container">
     <div class="bubble"></div>
@@ -952,6 +1054,23 @@
       }).catch(() => {});
     }
   }, { once: true });
+  /* --- OPEN ENVELOPE ANIMATION & AUTO MUSIC PLAY --- */
+  function openInvitation() {
+    const overlay = document.getElementById("envelope-overlay");
+    if (overlay) {
+      overlay.classList.add("hide-envelope");
+    }
+
+    // Awtomatikong mag-play ang music pagka-open ng envelope
+    const music = document.getElementById("bg-music");
+    const musicBtn = document.getElementById("musicBtn");
+    if (music) {
+      music.play().then(() => {
+        if (musicBtn) musicBtn.innerHTML = "🎵";
+        isPlaying = true;
+      }).catch(() => {});
+    }
+  }
 </script>
 </body>
 </html>
