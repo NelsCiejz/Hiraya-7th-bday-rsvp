@@ -127,7 +127,7 @@
       50% { transform: translateY(-8px); }
     }
 
-    /* FADE OUT CLASS */
+    /* FADE OUT CLASS - MAHALAGA ITO PARA MAWALA ANG ENVELOPE*/
     .envelope-overlay.hide-envelope {
       opacity: 0;
       visibility: hidden;
@@ -1088,14 +1088,14 @@
     const overlay = document.getElementById("envelope-overlay");
     const openBtn = document.querySelector(".open-btn");
     
-    // 1. I-PLAY ANG MAGIC CHIME SOUND EFFECT
+    // 1. I-play ang Magic Chime Sound
     const chime = document.getElementById("chime-sound");
     if (chime) {
       chime.volume = 0.6;
       chime.play().catch(() => {});
     }
 
-    // 2. MAGPA-BURST NG SPARKLES SA PALIGID NG BUTTON
+    // 2. Sparkle Burst Effect
     if (openBtn) {
       const rect = openBtn.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
@@ -1106,10 +1106,10 @@
       }
     }
 
-    // 3. FADE OUT ANG ENVELOPE OVERLAY AT PLAY BG MUSIC
+    // 3. SIGURADUHING NAWAWALA ANG ENVELOPE OVERLAY AT NAG-PLAY ANG BG MUSIC
     setTimeout(() => {
       if (overlay) {
-        overlay.classList.add("hide-envelope");
+        overlay.classList.add("hide-envelope"); // <--- Ito ang nagtatago ng sobre para lumitaw ang RSVP
       }
       
       const music = document.getElementById("bg-music");
@@ -1120,7 +1120,28 @@
           isPlaying = true;
         }).catch(() => {});
       }
-    }, 300); // 300ms delay para ma-enjoy ang sparkle & chime
+    }, 400); // 400ms delay para maramdaman ang animation at chime
+  }
+
+  function createSparkle(x, y) {
+    const sparkle = document.createElement("div");
+    sparkle.className = "sparkle";
+    
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 60 + Math.random() * 90;
+    const destX = Math.cos(angle) * distance;
+    const destY = Math.sin(angle) * distance;
+
+    sparkle.style.left = `${x}px`;
+    sparkle.style.top = `${y}px`;
+    sparkle.style.setProperty('--tw-x', `${destX}px`);
+    sparkle.style.setProperty('--tw-y', `${destY}px`);
+
+    document.body.appendChild(sparkle);
+
+    setTimeout(() => {
+      sparkle.remove();
+    }, 850);
   }
 
   // HELPER FUNCTION PARA SA SPARKLE PARTICLES
