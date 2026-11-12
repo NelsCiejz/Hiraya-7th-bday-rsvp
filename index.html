@@ -67,10 +67,37 @@
       margin: 5px 0;
     }
 
+    /* ENVELOPE SUBTITLE FONT UPDATE */
     .env-subtitle {
-      font-size: 0.95rem;
-      color: #5A4A42;
+      font-family: 'BoldinsFont', cursive;
+      font-size: 1.45rem; /* Mas malaki at malinaw */
+      color: #FF1493;
       margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    /* SPARKLE BURST ANIMATION */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FFF 10%, #FF69B4 70%, transparent 100%);
+      box-shadow: 0 0 10px #FFB6C1, 0 0 20px #FF69B4;
+      z-index: 9999999;
+      animation: sparkleFade 0.8s ease-out forwards;
+    }
+
+    @keyframes sparkleFade {
+      0% {
+        transform: scale(0.3) translate(0, 0);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.8) translate(var(--tw-x, 0px), var(--tw-y, 0px));
+        opacity: 0;
+      }
     }
 
     .open-btn {
@@ -1043,6 +1070,8 @@
       }).catch(err => {
         alert("Paki-tap po muna ang screen para mag-play ang music!");
       });
+      <!-- MAGIC CHIME SOUND EFFECT -->
+<audio id="chime-sound" src="https://assets.mixkit.co/active_storage/sfx/2014/2014-preview.mp3" preload="auto"></audio>
     }
   }
 
@@ -1057,9 +1086,65 @@
   /* --- OPEN ENVELOPE ANIMATION & AUTO MUSIC PLAY --- */
   function openInvitation() {
     const overlay = document.getElementById("envelope-overlay");
-    if (overlay) {
-      overlay.classList.add("hide-envelope");
+    const openBtn = document.querySelector(".open-btn");
+    
+    // 1. I-PLAY ANG MAGIC CHIME SOUND EFFECT
+    const chime = document.getElementById("chime-sound");
+    if (chime) {
+      chime.volume = 0.6;
+      chime.play().catch(() => {});
     }
+
+    // 2. MAGPA-BURST NG SPARKLES SA PALIGID NG BUTTON
+    if (openBtn) {
+      const rect = openBtn.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      for (let i = 0; i < 30; i++) {
+        createSparkle(centerX, centerY);
+      }
+    }
+
+    // 3. FADE OUT ANG ENVELOPE OVERLAY AT PLAY BG MUSIC
+    setTimeout(() => {
+      if (overlay) {
+        overlay.classList.add("hide-envelope");
+      }
+      
+      const music = document.getElementById("bg-music");
+      const musicBtn = document.getElementById("musicBtn");
+      if (music) {
+        music.play().then(() => {
+          if (musicBtn) musicBtn.innerHTML = "🎵";
+          isPlaying = true;
+        }).catch(() => {});
+      }
+    }, 300); // 300ms delay para ma-enjoy ang sparkle & chime
+  }
+
+  // HELPER FUNCTION PARA SA SPARKLE PARTICLES
+  function createSparkle(x, y) {
+    const sparkle = document.createElement("div");
+    sparkle.className = "sparkle";
+    
+    // Random direction movement
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 60 + Math.random() * 90;
+    const destX = Math.cos(angle) * distance;
+    const destY = Math.sin(angle) * distance;
+
+    sparkle.style.left = `${x}px`;
+    sparkle.style.top = `${y}px`;
+    sparkle.style.setProperty('--tw-x', `${destX}px`);
+    sparkle.style.setProperty('--tw-y', `${destY}px`);
+
+    document.body.appendChild(sparkle);
+
+    setTimeout(() => {
+      sparkle.remove();
+    }, 850);
+  }
 
     // Awtomatikong mag-play ang music pagka-open ng envelope
     const music = document.getElementById("bg-music");
